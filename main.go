@@ -16,6 +16,7 @@ type Word struct {
 
 var dictionary = make(map[string][]Word)
 var startingWords = make([]string, 0)
+var n = 2
 
 func main() {
 	rand.Seed(time.Now().Unix())
@@ -28,13 +29,20 @@ func main() {
 	if err == nil {
 		word := ""
 		startingWord := true
+		currentN := 1
 		for _, char := range input {
 			//If we hit a space push the word to the array
 			if char == ' ' {
-				if word != "" {
+				if word != "" && currentN >= n {
 					file = append(file, Word{value: word, startingWord: startingWord})
 					startingWord = false
 					word = ""
+					currentN = 0
+				} else {
+					if len(word) != 0 {
+						word += " "
+					}
+					currentN++
 				}
 				continue
 			}
@@ -46,6 +54,7 @@ func main() {
 				file = append(file, Word{value: word, punctuation: true})
 				startingWord = true
 				word = ""
+				currentN = 0
 				continue
 			}
 
@@ -66,10 +75,10 @@ func main() {
 		}
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 50; i++ {
 		fmt.Println(i, " : ", generateSentence())
 	}
-
+	fmt.Println(dictionary)
 }
 
 func generateSentence() string {
