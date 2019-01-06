@@ -11,6 +11,6 @@ func main() {
 	myMctg.LoadCorpus("input.txt")
 
 	for i := 0; i < 50; i++ {
-		fmt.Println(i, " : ", myMctg.GenerateSentence())
+		fmt.Println(i, " : ", myMctg.GenerateParagraph(5))
 	}
 }

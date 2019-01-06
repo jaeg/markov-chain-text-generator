@@ -97,3 +97,36 @@ func (this *MCTG)GenerateSentence() string {
 
 	return sentence
 }
+func (this *MCTG)GenerateParagraph(lines int) string {
+	//create a random sentence
+	done := false
+	sentence := ""
+	currentWord := ""
+	word := ""
+	lineCount := 0
+	for !done && lineCount < lines{
+		if currentWord == "" && len(sentence) == 0 {
+			currentWord = this.startingWords[rand.Intn(len(this.startingWords))]
+			word = currentWord
+		} else {
+			if len(this.dictionary[currentWord]) == 0 {
+				done = true
+			} else {
+				word = this.dictionary[currentWord][rand.Intn(len(this.dictionary[currentWord]))]
+				currentWordSplit := strings.Split(currentWord, " ")
+				currentWord = ""
+				for i := 1; i < len(currentWordSplit); i++ {
+					currentWord += currentWordSplit[i] + " "
+				}
+				currentWord += word
+			}
+		}
+		punctuation := (strings.Contains(word, ".")) || (strings.Contains(word, "?")) || (strings.Contains(word, "!"))
+		if punctuation {
+			lineCount++
+		}
+		sentence += " " + word
+	}
+
+	return sentence
+}
