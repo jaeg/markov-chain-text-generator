@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"fmt"
 )
 
 type MCTG struct {
@@ -24,7 +25,6 @@ func New(n int) (newMCTG *MCTG) {
 func (this *MCTG) LoadCorpus(path string) {
 	this.dictionary = make(map[string][]string)
 	this.startingWords = make([]string, 0)
-	this.n = 1
 
 	rand.Seed(time.Now().Unix())
 	fileBytes, err := ioutil.ReadFile(path)
@@ -33,9 +33,10 @@ func (this *MCTG) LoadCorpus(path string) {
 
 	if err == nil {
 		inputSplit := strings.Split(input, " ")
-		nextStarter := false
+		starterIn := 0
 		for i := 0; i < len(inputSplit); i++ {
 			word := inputSplit[i]
+			value :=  ""
 			if i != len(inputSplit)-1 {
 				for y := i + 1; y < len(inputSplit)-1 && y-i < this.n; y++ {
 					if y <= len(inputSplit)-1 {
@@ -43,24 +44,32 @@ func (this *MCTG) LoadCorpus(path string) {
 					}
 				}
 
-				value := ""
 				if i+this.n <= len(inputSplit)-1 {
 					value = inputSplit[i+this.n]
 				}
 				this.dictionary[word] = append(this.dictionary[word], value)
-				if nextStarter {
+
+				if starterIn == 0 {
 					this.startingWords = append(this.startingWords, word)
-					nextStarter = false
 				}
+				starterIn--
 			}
-			if (strings.Contains(word, ".")) || (strings.Contains(word, "?")) || (strings.Contains(word, "!")) {
-				nextStarter = true
-				i += this.n - 1
+			if (strings.Contains(value, ".")) || (strings.Contains(value, "?")) || (strings.Contains(value, "!")) {
+				if (starterIn <= 0) {
+					starterIn = this.n
+				}
 			}
 		}
 	}
-	/*	for i := 0; i < len(startingWords); i++ {
-		fmt.Println(startingWords[i])
+
+	fmt.Println("Starting words ------")
+	for i := 0; i < len(this.startingWords); i++ {
+		fmt.Println(this.startingWords[i])
+	}
+	/*
+	fmt.Println("Dictionary ------")
+	for k,v := range this.dictionary {
+		fmt.Println(k,v)
 	}*/
 
 }
@@ -121,11 +130,14 @@ func (this *MCTG)GenerateParagraph(lines int) string {
 				currentWord += word
 			}
 		}
+
+		sentence += " " + word
+
 		punctuation := (strings.Contains(word, ".")) || (strings.Contains(word, "?")) || (strings.Contains(word, "!"))
 		if punctuation {
 			lineCount++
+			word = ""
 		}
-		sentence += " " + word
 	}
 
 	return sentence
