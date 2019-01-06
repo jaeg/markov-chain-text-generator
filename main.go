@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -14,7 +15,7 @@ type Word struct {
 	punctuation  bool
 }
 
-var dictionary = make(map[string][]Word)
+var dictionary = make(map[string][]string)
 var startingWords = make([]string, 0)
 var n = 2
 
@@ -24,61 +25,41 @@ func main() {
 	re := regexp.MustCompile(`\r?\n`)
 	input := re.ReplaceAllString(string(fileBytes), " ")
 
-	var file []Word
-
 	if err == nil {
-		word := ""
-		startingWord := true
-		currentN := 1
-		for _, char := range input {
-			//If we hit a space push the word to the array
-			if char == ' ' {
-				if word != "" && currentN >= n {
-					file = append(file, Word{value: word, startingWord: startingWord})
-					startingWord = false
-					word = ""
-					currentN = 0
-				} else {
-					if len(word) != 0 {
-						word += " "
+		inputSplit := strings.Split(input, " ")
+		nextStarter := false
+		for i := 0; i < len(inputSplit); i++ {
+			word := inputSplit[i]
+			if i != len(inputSplit)-1 {
+				for y := i + 1; y < len(inputSplit)-1 && y-i < n; y++ {
+					if y <= len(inputSplit)-1 {
+						word += " " + inputSplit[y]
 					}
-					currentN++
 				}
-				continue
-			}
 
-			//If we hit punctuation push the word to the array
-			if (char == '.') || (char == '?') || (char == '!') {
-				file = append(file, Word{value: word, startingWord: startingWord})
-				word = string(char)
-				file = append(file, Word{value: word, punctuation: true})
-				startingWord = true
-				word = ""
-				currentN = 0
-				continue
+				value := ""
+				if i+n <= len(inputSplit)-1 {
+					value = inputSplit[i+n]
+				}
+				dictionary[word] = append(dictionary[word], value)
+				if nextStarter {
+					startingWords = append(startingWords, word)
+					nextStarter = false
+				}
 			}
-
-			word += string(char)
+			if (strings.Contains(word, ".")) || (strings.Contains(word, "?")) || (strings.Contains(word, "!")) {
+				nextStarter = true
+				i += n - 1
+			}
 		}
 	}
-
-	for i, word := range file {
-		if word.startingWord {
-			startingWords = append(startingWords, word.value)
-		}
-		if len(dictionary[word.value]) == 0 {
-			dictionary[word.value] = make([]Word, 0)
-		}
-
-		if i < len(file)-1 {
-			dictionary[word.value] = append(dictionary[word.value], file[i+1])
-		}
-	}
+	/*	for i := 0; i < len(startingWords); i++ {
+		fmt.Println(startingWords[i])
+	}*/
 
 	for i := 0; i < 50; i++ {
 		fmt.Println(i, " : ", generateSentence())
 	}
-	fmt.Println(dictionary)
 }
 
 func generateSentence() string {
@@ -86,28 +67,29 @@ func generateSentence() string {
 	done := false
 	sentence := ""
 	currentWord := ""
-	punctuation := false
+	word := ""
 	for !done {
 		if currentWord == "" && len(sentence) == 0 {
 			currentWord = startingWords[rand.Intn(len(startingWords))]
+			word = currentWord
 		} else {
 			if len(dictionary[currentWord]) == 0 {
 				done = true
 			} else {
-				word := dictionary[currentWord][rand.Intn(len(dictionary[currentWord]))]
-				currentWord = word.value
-				punctuation = word.punctuation
+				word = dictionary[currentWord][rand.Intn(len(dictionary[currentWord]))]
+				currentWordSplit := strings.Split(currentWord, " ")
+				currentWord = ""
+				for i := 1; i < len(currentWordSplit); i++ {
+					currentWord += currentWordSplit[i] + " "
+				}
+				currentWord += word
 			}
 		}
-
-		if punctuation || len(sentence) == 0 {
-			sentence += currentWord
-			if punctuation {
-				done = true
-			}
-		} else {
-			sentence += " " + currentWord
+		punctuation := (strings.Contains(word, ".")) || (strings.Contains(word, "?")) || (strings.Contains(word, "!"))
+		if punctuation {
+			done = true
 		}
+		sentence += " " + word
 	}
 
 	return sentence
