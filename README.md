@@ -6,10 +6,16 @@ Create a mctg instance.  n is the number of words per group.  The higher the num
 ```
 myMctg := mctg.New(n)
 ```
- Load a text file as a corpus and load it into the dictionary.  Can be called multiple times.
+Load a text file as a corpus and load it into the dictionary.  Can be called multiple times.
 ```
 myMctg.LoadCorpus("input.txt")
 ```
+
+Parses a string and loads it into the dictionary.  Can be called multiple times.
+```
+myMctg.ParseCorpusFromString("My corpus goes here.")
+```
+
 Generate a paragraph with 5 sentences. Returns a string.
 ```
 myMctg.GenerateParagraph(5)
