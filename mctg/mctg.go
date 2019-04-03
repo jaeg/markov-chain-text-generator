@@ -6,21 +6,19 @@ import (
 	"regexp"
 	"strings"
 	"time"
-	"fmt"
 )
 
 type MCTG struct {
-	dictionary map[string][]string
+	dictionary    map[string][]string
 	startingWords []string
-	n int
+	n             int
 }
 
 func New(n int) (newMCTG *MCTG) {
-	newMCTG = &MCTG{n:n}
+	newMCTG = &MCTG{n: n}
 
 	return newMCTG
 }
-
 
 func (this *MCTG) LoadCorpus(path string) {
 	this.dictionary = make(map[string][]string)
@@ -36,7 +34,7 @@ func (this *MCTG) LoadCorpus(path string) {
 		starterIn := 0
 		for i := 0; i < len(inputSplit); i++ {
 			word := inputSplit[i]
-			value :=  ""
+			value := ""
 			if i != len(inputSplit)-1 {
 				for y := i + 1; y < len(inputSplit)-1 && y-i < this.n; y++ {
 					if y <= len(inputSplit)-1 {
@@ -55,26 +53,15 @@ func (this *MCTG) LoadCorpus(path string) {
 				starterIn--
 			}
 			if (strings.Contains(value, ".")) || (strings.Contains(value, "?")) || (strings.Contains(value, "!")) {
-				if (starterIn <= 0) {
+				if starterIn <= 0 {
 					starterIn = this.n
 				}
 			}
 		}
 	}
-
-	fmt.Println("Starting words ------")
-	for i := 0; i < len(this.startingWords); i++ {
-		fmt.Println(this.startingWords[i])
-	}
-	/*
-	fmt.Println("Dictionary ------")
-	for k,v := range this.dictionary {
-		fmt.Println(k,v)
-	}*/
-
 }
 
-func (this *MCTG)GenerateSentence() string {
+func (this *MCTG) GenerateSentence() string {
 	//create a random sentence
 	done := false
 	sentence := ""
@@ -106,14 +93,14 @@ func (this *MCTG)GenerateSentence() string {
 
 	return sentence
 }
-func (this *MCTG)GenerateParagraph(lines int) string {
+func (this *MCTG) GenerateParagraph(lines int) string {
 	//create a random sentence
 	done := false
 	sentence := ""
 	currentWord := ""
 	word := ""
 	lineCount := 0
-	for !done && lineCount < lines{
+	for !done && lineCount < lines {
 		if currentWord == "" && len(sentence) == 0 {
 			currentWord = this.startingWords[rand.Intn(len(this.startingWords))]
 			word = currentWord
