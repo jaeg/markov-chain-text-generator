@@ -20,20 +20,22 @@ func New(n int) (newMCTG *MCTG) {
 	return newMCTG
 }
 
-func (this *MCTG) LoadCorpus(path string) {
+func (this *MCTG) LoadCorpus(path string, new bool) {
 	rand.Seed(time.Now().Unix())
 	fileBytes, err := ioutil.ReadFile(path)
 	re := regexp.MustCompile(`\r?\n`)
 	input := re.ReplaceAllString(string(fileBytes), " ")
 
 	if err == nil {
-		this.ParseCorpusFromString(input)
+		this.ParseCorpusFromString(input, new)
 	}
 }
 
-func (this *MCTG) ParseCorpusFromString(input string) {
-	this.dictionary = make(map[string][]string)
-	this.startingWords = make([]string, 0)
+func (this *MCTG) ParseCorpusFromString(input string, new bool) {
+	if new || this.dictionary == nil || this.startingWords == nil {
+		this.dictionary = make(map[string][]string)
+		this.startingWords = make([]string, 0)
+	}
 	inputSplit := strings.Split(input, " ")
 	starterIn := 0
 	for i := 0; i < len(inputSplit); i++ {
@@ -62,9 +64,13 @@ func (this *MCTG) ParseCorpusFromString(input string) {
 			}
 		}
 	}
+
 }
 
 func (this *MCTG) GenerateSentence() string {
+	if len(this.startingWords) == 0 {
+		return ""
+	}
 	//create a random sentence
 	done := false
 	sentence := ""
